@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { experiences, sectionTitles } from "@/data";
+import { getLogoDimensions } from "@/lib/logo-dimensions";
 import SectionHeading from "./SectionHeading";
 import TechIcon from "./TechIcon";
 
@@ -21,8 +22,8 @@ export default function Experience() {
                 <Image
                   src={exp.logo}
                   alt={exp.company}
-                  width={56}
-                  height={56}
+                  {...getLogoDimensions(exp.logo, { width: 56, height: 56 })}
+                  style={{ width: "auto", height: "auto" }}
                   className={`brand-logo h-auto w-auto object-contain ${exp.logoSize === "sm" ? "max-h-8 max-w-16" : "max-h-11 max-w-24"}`}
                 />
               ) : (
@@ -69,8 +70,8 @@ export default function Experience() {
                           <Image
                             src={product.logo}
                             alt={product.name}
-                            width={80}
-                            height={32}
+                            {...getLogoDimensions(product.logo, { width: 80, height: 32 })}
+                            style={{ width: "auto", height: "auto" }}
                             className="brand-logo h-auto max-h-8 w-auto max-w-16 object-contain sm:max-h-9 sm:max-w-20"
                           />
                         ) : (
@@ -99,8 +100,8 @@ export default function Experience() {
                           <Image
                             src={collab.logo}
                             alt={collab.name}
-                            width={80}
-                            height={28}
+                            {...getLogoDimensions(collab.logo, { width: 80, height: 28 })}
+                            style={{ width: "auto", height: "auto" }}
                             className="brand-logo h-auto max-h-8 w-auto max-w-16 object-contain sm:max-h-9 sm:max-w-20"
                           />
                         )}

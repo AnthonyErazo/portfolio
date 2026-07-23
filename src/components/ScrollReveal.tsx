@@ -36,6 +36,11 @@ export default function ScrollReveal() {
       frame = 0;
       const viewport = window.innerHeight;
       const band = viewport * FADE_RATIO;
+      const measurements: Array<{
+        el: HTMLElement;
+        visibility: number;
+        direction: number;
+      }> = [];
 
       for (const el of active) {
         const rect = el.getBoundingClientRect();
@@ -47,6 +52,10 @@ export default function ScrollReveal() {
         visibility = Math.min(1, Math.max(0, visibility));
 
         const direction = center < viewport / 2 ? -1 : 1;
+        measurements.push({ el, visibility, direction });
+      }
+
+      for (const { el, visibility, direction } of measurements) {
         const hidden = 1 - visibility;
         el.style.opacity = String(visibility);
         el.style.transform =
@@ -67,11 +76,13 @@ export default function ScrollReveal() {
           const el = entry.target as HTMLElement;
           if (entry.isIntersecting) {
             active.add(el);
+            el.style.willChange = "opacity, transform, filter";
           } else {
             active.delete(el);
             el.style.opacity = "0";
             el.style.transform = "none";
             el.style.filter = "none";
+            el.style.willChange = "";
           }
         }
         schedule();
@@ -80,7 +91,6 @@ export default function ScrollReveal() {
     );
 
     items.forEach((el) => {
-      el.style.willChange = "opacity, transform, filter";
       nearObserver.observe(el);
     });
 

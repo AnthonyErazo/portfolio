@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useDeferredValue, useMemo, useState } from "react";
 import { ArrowUpRight, ImageIcon, Search, X } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { projects, projectTypeLabels, sectionTitles, type Project } from "@/data";
+import { projectPath } from "@/lib/projects";
 import SectionHeading from "./SectionHeading";
 import ProjectModal from "./ProjectModal";
 import ProjectTypeBadge from "./ProjectTypeBadge";
@@ -56,32 +58,49 @@ const projectSearchText = (project: Project) =>
     ].join(" ")
   );
 
+const projectSearchIndex = new Map(
+  projects.map((project) => [project.id, projectSearchText(project)])
+);
+
 export default function Projects() {
   const { t } = useLanguage();
   const [selected, setSelected] = useState<Project | null>(null);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<ProjectTypeFilter>("all");
   const [technologyFilter, setTechnologyFilter] = useState("all");
+  const deferredQuery = useDeferredValue(query);
 
-  const queryTerms = normalizeSearchText(query.trim()).split(/\s+/).filter(Boolean);
-  const filteredProjects = projects.filter((project) => {
-    const matchesType = typeFilter === "all" || project.type === typeFilter;
-    const matchesTechnology =
-      technologyFilter === "all" || project.technologies.includes(technologyFilter);
-    const searchableText = projectSearchText(project);
-    const matchesQuery = queryTerms.every((term) => searchableText.includes(term));
+  const queryTerms = useMemo(
+    () => normalizeSearchText(deferredQuery.trim()).split(/\s+/).filter(Boolean),
+    [deferredQuery]
+  );
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter((project) => {
+        const matchesType = typeFilter === "all" || project.type === typeFilter;
+        const matchesTechnology =
+          technologyFilter === "all" || project.technologies.includes(technologyFilter);
+        const searchableText = projectSearchIndex.get(project.id) ?? "";
+        const matchesQuery = queryTerms.every((term) => searchableText.includes(term));
 
-    return matchesType && matchesTechnology && matchesQuery;
-  });
+        return matchesType && matchesTechnology && matchesQuery;
+      }),
+    [queryTerms, technologyFilter, typeFilter]
+  );
 
-  const featured = filteredProjects
-    .filter((project) => project.featured)
-    .sort(
-      (a, b) =>
-        (featuredProjectRank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
-        (featuredProjectRank.get(b.id) ?? Number.MAX_SAFE_INTEGER)
-    );
-  const others = filteredProjects.filter((project) => !project.featured);
+  const { featured, others } = useMemo(
+    () => ({
+      featured: filteredProjects
+        .filter((project) => project.featured)
+        .sort(
+          (a, b) =>
+            (featuredProjectRank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+            (featuredProjectRank.get(b.id) ?? Number.MAX_SAFE_INTEGER)
+        ),
+      others: filteredProjects.filter((project) => !project.featured),
+    }),
+    [filteredProjects]
+  );
   const hasActiveFilters = Boolean(query.trim()) || typeFilter !== "all" || technologyFilter !== "all";
 
   const resetFilters = () => {
@@ -241,12 +260,15 @@ export default function Projects() {
                     className="absolute left-0 top-1 h-[calc(100%-0.5rem)] w-px origin-top scale-y-0 bg-accent transition-transform duration-500 group-hover:scale-y-100"
                   />
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <button
-                      onClick={() => setSelected(project)}
-                      className="text-left font-serif text-2xl tracking-tight transition-colors hover:text-accent md:text-3xl"
-                    >
-                      {project.title}
-                    </button>
+                    <h3>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(project)}
+                        className="text-left font-serif text-2xl tracking-tight transition-colors hover:text-accent md:text-3xl"
+                      >
+                        {project.title}
+                      </button>
+                    </h3>
                     <ProjectTypeBadge type={project.type} />
                   </div>
 
@@ -286,6 +308,14 @@ export default function Projects() {
                         </span>
                       )}
                     </button>
+
+                    <Link
+                      href={projectPath(project)}
+                      className="group/link inline-flex items-center gap-1 transition-colors hover:text-accent"
+                    >
+                      {t({ es: "Caso completo", en: "Full case study" })}
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover/link:text-accent" />
+                    </Link>
 
                     {(project.repositories ??
                       (project.repoUrl
@@ -347,37 +377,54 @@ export default function Projects() {
                         ].slice(0, 3);
 
                   return (
-                    <button
+                    <article
                       key={project.id}
-                      onClick={() => setSelected(project)}
                       className="reveal group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card p-5 text-left transition-colors hover:border-accent"
                     >
+                      <button
+                        type="button"
+                        onClick={() => setSelected(project)}
+                        aria-label={t({
+                          es: `Abrir vista rápida de ${project.title}`,
+                          en: `Open quick view for ${project.title}`,
+                        })}
+                        className="absolute inset-0 z-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                      />
                       <span
                         aria-hidden
-                        className="absolute inset-x-0 top-0 h-px scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100"
+                        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100"
                       />
 
-                      <div className="flex items-start justify-between gap-3">
-                        <ProjectTypeBadge type={project.type} />
-                        <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
+                      <div className="pointer-events-none relative z-10 flex h-full flex-col">
+                        <div className="flex items-start justify-between gap-3">
+                          <ProjectTypeBadge type={project.type} />
+                          <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
+                        </div>
+
+                        <h3 className="mt-3 font-medium">
+                          <Link
+                            href={projectPath(project)}
+                            className="pointer-events-auto transition-colors hover:text-accent"
+                          >
+                            {project.title}
+                          </Link>
+                        </h3>
+
+                        <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                          {t(project.shortDescription)}
+                        </p>
+
+                        <div className="mt-4 flex items-center justify-between gap-3 font-mono text-xs text-muted-foreground">
+                          <span>{compactTechnologies.join(" · ")}</span>
+                          {project.images && (
+                            <span className="inline-flex shrink-0 items-center gap-1 text-accent">
+                              <ImageIcon className="h-3.5 w-3.5" />
+                              {project.images.length}
+                            </span>
+                          )}
+                        </div>
                       </div>
-
-                      <h4 className="mt-3 font-medium">{project.title}</h4>
-
-                      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                        {t(project.shortDescription)}
-                      </p>
-
-                      <div className="mt-4 flex items-center justify-between gap-3 font-mono text-xs text-muted-foreground">
-                        <span>{compactTechnologies.join(" · ")}</span>
-                        {project.images && (
-                          <span className="inline-flex shrink-0 items-center gap-1 text-accent">
-                            <ImageIcon className="h-3.5 w-3.5" />
-                            {project.images.length}
-                          </span>
-                        )}
-                      </div>
-                    </button>
+                    </article>
                   );
                 })}
               </div>

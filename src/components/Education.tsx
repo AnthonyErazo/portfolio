@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { certificationGroups, education, sectionTitles } from "@/data";
+import { getLogoDimensions } from "@/lib/logo-dimensions";
 import SectionHeading from "./SectionHeading";
 
 export default function Education() {
@@ -24,8 +25,8 @@ export default function Education() {
                 <Image
                   src={item.logo}
                   alt={item.institution}
-                  width={56}
-                  height={56}
+                  {...getLogoDimensions(item.logo, { width: 56, height: 56 })}
+                  style={{ width: "auto", height: "auto" }}
                   data-tone={item.logoTone}
                   className="brand-logo h-auto max-h-12 w-auto max-w-24 object-contain"
                 />

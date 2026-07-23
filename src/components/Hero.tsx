@@ -68,14 +68,24 @@ export default function Hero() {
             {t({ es: "Descargar CV", en: "Download CV" })}
           </a>
           {github && (
-            <a href={github.url} target="_blank" rel="noopener noreferrer" className="cta">
+            <a
+              href={github.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta"
+            >
               <Github className="h-4 w-4" />
               GitHub
               <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
             </a>
           )}
           {linkedin && (
-            <a href={linkedin.url} target="_blank" rel="noopener noreferrer" className="cta">
+            <a
+              href={linkedin.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta"
+            >
               <Linkedin className="h-4 w-4" />
               LinkedIn
               <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />

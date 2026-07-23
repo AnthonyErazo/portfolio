@@ -109,8 +109,8 @@ export const personalInfo = {
   name: "Anthony Josue Erazo Llacsahuanga",
   shortName: "Anthony Erazo",
   title: {
-    es: "Desarrollador Full Stack",
-    en: "Full Stack Developer",
+    es: "Desarrollador Full Stack · Lima, Perú",
+    en: "Full Stack Developer · Lima, Peru",
   },
   subtitle: {
     es: "Desarrollo soluciones backend, web y móviles con servicios cloud y analítica de datos aplicada a productos digitales.",

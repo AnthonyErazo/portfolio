@@ -6,8 +6,24 @@ const IDLE_MS = 900;
 const EASE = 0.18;
 const RADIUS = 110;
 const COARSE = 260;
-const ENABLE_QUERY = "(pointer: fine) and (min-width: 1024px)";
-const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "SVG", "PATH", "INPUT", "TEXTAREA", "OPTION"]);
+const ENABLE_QUERY = "(any-pointer: fine)";
+const SKIP_TAGS = new Set([
+  "SCRIPT",
+  "STYLE",
+  "SVG",
+  "PATH",
+  "INPUT",
+  "TEXTAREA",
+  "OPTION",
+]);
+
+type LitBox = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  fixed: boolean;
+};
 
 function wrapTextNodes() {
   const wrapped: HTMLElement[] = [];
@@ -39,6 +55,7 @@ function wrapTextNodes() {
           fragment.appendChild(document.createTextNode(part));
           continue;
         }
+
         const span = document.createElement("span");
         span.dataset.lit = "";
         span.textContent = part;
@@ -64,8 +81,8 @@ function unwrap(spans: HTMLElement[]) {
   for (const parent of parents) (parent as Element).normalize?.();
 }
 
-function isFixed(el: HTMLElement) {
-  let node: HTMLElement | null = el;
+function isFixed(element: HTMLElement) {
+  let node: HTMLElement | null = element;
   while (node && node !== document.body) {
     if (getComputedStyle(node).position === "fixed") return true;
     node = node.parentElement;
@@ -102,18 +119,21 @@ export default function CursorFX() {
 
     const root = document.documentElement;
     const supportsTextClip =
-      CSS.supports("background-clip", "text") || CSS.supports("-webkit-background-clip", "text");
+      CSS.supports("background-clip", "text") ||
+      CSS.supports("-webkit-background-clip", "text");
 
     root.classList.add("cursor-fx");
 
     let spans: HTMLElement[] = [];
-    let boxes: { left: number; top: number; width: number; height: number; fixed: boolean }[] = [];
+    let boxes: LitBox[] = [];
     let inRange = new Set<HTMLElement>();
+    let disposed = false;
 
     const measure = () => {
-      boxes = spans.map((el) => {
-        const rect = el.getBoundingClientRect();
-        const fixed = isFixed(el);
+      if (disposed) return;
+      boxes = spans.map((element) => {
+        const rect = element.getBoundingClientRect();
+        const fixed = isFixed(element);
         return {
           left: rect.left + (fixed ? 0 : window.scrollX),
           top: rect.top + (fixed ? 0 : window.scrollY),
@@ -124,19 +144,23 @@ export default function CursorFX() {
       });
     };
 
-    let measureTimer: ReturnType<typeof setTimeout>;
+    let measureTimer: ReturnType<typeof setTimeout> | undefined;
     const scheduleMeasure = () => {
-      clearTimeout(measureTimer);
+      if (measureTimer !== undefined) clearTimeout(measureTimer);
       measureTimer = setTimeout(measure, 150);
     };
 
     const paintBases = () => {
-      for (const el of spans) el.classList.remove("lit");
-      for (const el of spans) el.style.setProperty("--lit-base", getComputedStyle(el).color);
-      for (const el of spans) el.classList.add("lit");
+      if (disposed) return;
+      for (const element of spans) element.classList.remove("lit");
+      for (const element of spans) {
+        element.style.setProperty("--lit-base", getComputedStyle(element).color);
+      }
+      for (const element of spans) element.classList.add("lit");
     };
 
     const collect = () => {
+      if (disposed) return;
       unwrap(spans);
       spans = wrapTextNodes();
       paintBases();
@@ -146,11 +170,15 @@ export default function CursorFX() {
 
     let contentObserver: MutationObserver | undefined;
     let themeObserver: MutationObserver | undefined;
-    let recollectTimer: ReturnType<typeof setTimeout>;
+    let recollectTimer: ReturnType<typeof setTimeout> | undefined;
 
     const observeContent = () => {
       for (const node of document.querySelectorAll("header, main, footer")) {
-        contentObserver?.observe(node, { childList: true, subtree: true, characterData: true });
+        contentObserver?.observe(node, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
       }
     };
 
@@ -159,12 +187,16 @@ export default function CursorFX() {
       collect();
 
       contentObserver = new MutationObserver((mutations) => {
-        const relevante = mutations.some((m) => {
-          const target = m.target.nodeType === Node.ELEMENT_NODE ? (m.target as Element) : m.target.parentElement;
+        const relevant = mutations.some((mutation) => {
+          const target =
+            mutation.target.nodeType === Node.ELEMENT_NODE
+              ? (mutation.target as Element)
+              : mutation.target.parentElement;
           return !target?.closest("[data-no-lit]");
         });
-        if (!relevante) return;
-        clearTimeout(recollectTimer);
+        if (!relevant) return;
+
+        if (recollectTimer !== undefined) clearTimeout(recollectTimer);
         recollectTimer = setTimeout(() => {
           contentObserver?.disconnect();
           collect();
@@ -180,43 +212,53 @@ export default function CursorFX() {
         lastTheme = theme;
         requestAnimationFrame(paintBases);
       });
-      themeObserver.observe(root, { attributes: true, attributeFilter: ["class"] });
+      themeObserver.observe(root, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
       window.addEventListener("resize", scheduleMeasure);
     }
 
     const paintLit = (x: number, y: number) => {
       const next = new Set<HTMLElement>();
 
-      for (let i = 0; i < spans.length; i++) {
-        const box = boxes[i];
+      for (let index = 0; index < spans.length; index++) {
+        const box = boxes[index];
         if (!box) continue;
-        const px = box.fixed ? x : x + window.scrollX;
-        const py = box.fixed ? y : y + window.scrollY;
+        const pageX = box.fixed ? x : x + window.scrollX;
+        const pageY = box.fixed ? y : y + window.scrollY;
 
         if (
-          px < box.left - COARSE ||
-          px > box.left + box.width + COARSE ||
-          py < box.top - COARSE ||
-          py > box.top + box.height + COARSE
+          pageX < box.left - COARSE ||
+          pageX > box.left + box.width + COARSE ||
+          pageY < box.top - COARSE ||
+          pageY > box.top + box.height + COARSE
         ) {
           continue;
         }
 
-        const el = spans[i];
-        const rect = el.getBoundingClientRect();
+        const element = spans[index];
+        const rect = element.getBoundingClientRect();
         const dx = x - rect.left;
         const dy = y - rect.top;
-        if (dx < -RADIUS || dx > rect.width + RADIUS || dy < -RADIUS || dy > rect.height + RADIUS) {
+        if (
+          dx < -RADIUS ||
+          dx > rect.width + RADIUS ||
+          dy < -RADIUS ||
+          dy > rect.height + RADIUS
+        ) {
           continue;
         }
 
-        el.style.setProperty("--lx", `${dx.toFixed(0)}px`);
-        el.style.setProperty("--ly", `${dy.toFixed(0)}px`);
-        next.add(el);
+        element.style.setProperty("--lx", `${dx.toFixed(0)}px`);
+        element.style.setProperty("--ly", `${dy.toFixed(0)}px`);
+        next.add(element);
       }
 
-      for (const el of inRange) {
-        if (!next.has(el)) el.style.removeProperty("--lx");
+      for (const element of inRange) {
+        if (next.has(element)) continue;
+        element.style.removeProperty("--lx");
+        element.style.removeProperty("--ly");
       }
       inRange = next;
     };
@@ -225,7 +267,7 @@ export default function CursorFX() {
     let targetY = window.innerHeight / 2;
     let easedX = targetX;
     let easedY = targetY;
-    let idleTimer: ReturnType<typeof setTimeout>;
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
     let frame = 0;
 
     const setIdle = (idle: boolean) => {
@@ -233,13 +275,44 @@ export default function CursorFX() {
       discRef.current?.classList.toggle("is-idle", idle);
     };
 
+    const tick = () => {
+      frame = 0;
+      easedX += (targetX - easedX) * EASE;
+      easedY += (targetY - easedY) * EASE;
+
+      const settled =
+        Math.abs(targetX - easedX) < 0.1 && Math.abs(targetY - easedY) < 0.1;
+      if (settled) {
+        easedX = targetX;
+        easedY = targetY;
+      }
+
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+      }
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${easedX}px, ${easedY}px, 0)`;
+      }
+      if (discRef.current) {
+        discRef.current.style.transform = `translate3d(${easedX}px, ${easedY}px, 0)`;
+      }
+
+      paintLit(easedX, easedY);
+      if (!settled) frame = requestAnimationFrame(tick);
+    };
+
+    const requestFrame = () => {
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+
     const handleMove = (event: PointerEvent) => {
       if (event.pointerType !== "mouse") return;
       targetX = event.clientX;
       targetY = event.clientY;
       setIdle(false);
-      clearTimeout(idleTimer);
+      if (idleTimer !== undefined) clearTimeout(idleTimer);
       idleTimer = setTimeout(() => setIdle(true), IDLE_MS);
+      requestFrame();
     };
 
     const handleOver = (event: PointerEvent) => {
@@ -250,31 +323,27 @@ export default function CursorFX() {
       root.classList.toggle("cursor-active", Boolean(interactive));
     };
 
-    const loop = () => {
-      easedX += (targetX - easedX) * EASE;
-      easedY += (targetY - easedY) * EASE;
-
-      if (dotRef.current) dotRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
-      if (ringRef.current) ringRef.current.style.transform = `translate3d(${easedX}px, ${easedY}px, 0)`;
-      if (discRef.current) discRef.current.style.transform = `translate3d(${easedX}px, ${easedY}px, 0)`;
-
-      paintLit(easedX, easedY);
-      frame = requestAnimationFrame(loop);
+    const handleScroll = () => {
+      scheduleMeasure();
+      requestFrame();
     };
-    frame = requestAnimationFrame(loop);
 
     window.addEventListener("pointermove", handleMove, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     document.addEventListener("pointerover", handleOver, { passive: true });
+    requestFrame();
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
-      clearTimeout(idleTimer);
-      clearTimeout(recollectTimer);
+      if (idleTimer !== undefined) clearTimeout(idleTimer);
+      if (recollectTimer !== undefined) clearTimeout(recollectTimer);
+      if (measureTimer !== undefined) clearTimeout(measureTimer);
       contentObserver?.disconnect();
       themeObserver?.disconnect();
       window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", scheduleMeasure);
-      clearTimeout(measureTimer);
       document.removeEventListener("pointerover", handleOver);
       unwrap(spans);
       root.classList.remove("cursor-fx", "cursor-active", "cursor-native", "lit-ready");
