@@ -17,12 +17,14 @@ export default function Experience() {
       <div className="space-y-16">
         {experiences.map((exp) => (
           <article key={exp.id} className="group grid gap-4 md:grid-cols-[180px_1fr] md:gap-8">
-            <div className="reveal flex items-center gap-3 md:flex-col md:items-start md:gap-4">
+            <div className="reveal self-start flex items-center gap-3 md:flex-col md:items-start md:gap-4">
               {exp.logo ? (
                 <Image
                   src={exp.logo}
                   alt={exp.company}
                   {...getLogoDimensions(exp.logo, { width: 56, height: 56 })}
+                  sizes={exp.logoSize === "sm" ? "32px" : "96px"}
+                  loading={exp.id === 1 ? "eager" : "lazy"}
                   style={{ width: "auto", height: "auto" }}
                   className={`brand-logo h-auto w-auto object-contain ${exp.logoSize === "sm" ? "max-h-8 max-w-16" : "max-h-11 max-w-24"}`}
                 />
@@ -71,6 +73,7 @@ export default function Experience() {
                             src={product.logo}
                             alt={product.name}
                             {...getLogoDimensions(product.logo, { width: 80, height: 32 })}
+                            sizes="80px"
                             style={{ width: "auto", height: "auto" }}
                             className="brand-logo h-auto max-h-8 w-auto max-w-16 object-contain sm:max-h-9 sm:max-w-20"
                           />
@@ -101,6 +104,7 @@ export default function Experience() {
                             src={collab.logo}
                             alt={collab.name}
                             {...getLogoDimensions(collab.logo, { width: 80, height: 28 })}
+                            sizes="80px"
                             style={{ width: "auto", height: "auto" }}
                             className="brand-logo h-auto max-h-8 w-auto max-w-16 object-contain sm:max-h-9 sm:max-w-20"
                           />

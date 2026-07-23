@@ -1,4 +1,5 @@
 import BackgroundTexture from "@/components/BackgroundTexture";
+import TechIconSprite from "@/components/TechIconSprite";
 import CursorFX from "@/components/CursorFX";
 import ScrollReveal from "@/components/ScrollReveal";
 import Navbar from "@/components/Navbar";
@@ -10,7 +11,13 @@ import Skills from "@/components/Skills";
 import Education from "@/components/Education";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import { personalInfo, socialLinks } from "@/data";
+import {
+  personalInfo,
+  socialLinks,
+  type Project,
+  type ProjectSummary,
+} from "@/data";
+import { projects } from "@/data/projects";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const profileJsonLd = {
@@ -73,6 +80,18 @@ const profileJsonLd = {
   ],
 };
 
+const projectSummaries: ProjectSummary[] = projects.map(
+  ({ fullDescription, features, images, ...summary }: Project) => {
+    void fullDescription;
+    void features;
+
+    return {
+      ...summary,
+      imageCount: images?.length ?? 0,
+    };
+  },
+);
+
 export default function Home() {
   return (
     <div id="top">
@@ -82,6 +101,7 @@ export default function Home() {
           __html: JSON.stringify(profileJsonLd).replace(/</g, "\\u003c"),
         }}
       />
+      <TechIconSprite />
       <BackgroundTexture />
       <CursorFX />
       <ScrollReveal />
@@ -90,7 +110,7 @@ export default function Home() {
         <Hero />
         <About />
         <Experience />
-        <Projects />
+        <Projects projects={projectSummaries} />
         <Skills />
         <Education />
         <Contact />

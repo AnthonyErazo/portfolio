@@ -6,6 +6,7 @@ const IDLE_MS = 900;
 const EASE = 0.18;
 const RADIUS = 110;
 const COARSE = 260;
+const CELL_SIZE = 256;
 const ENABLE_QUERY = "(any-pointer: fine)";
 const SKIP_TAGS = new Set([
   "SCRIPT",
@@ -24,6 +25,45 @@ type LitBox = {
   height: number;
   fixed: boolean;
 };
+
+type SpatialIndex = {
+  fixed: Map<string, number[]>;
+  page: Map<string, number[]>;
+};
+
+function cellKey(x: number, y: number) {
+  return `${Math.floor(x / CELL_SIZE)}:${Math.floor(y / CELL_SIZE)}`;
+}
+
+function buildSpatialIndex(boxes: LitBox[]): SpatialIndex {
+  const index: SpatialIndex = {
+    fixed: new Map(),
+    page: new Map(),
+  };
+
+  boxes.forEach((box, boxIndex) => {
+    const buckets = box.fixed ? index.fixed : index.page;
+    const firstColumn = Math.floor((box.left - COARSE) / CELL_SIZE);
+    const lastColumn = Math.floor(
+      (box.left + box.width + COARSE) / CELL_SIZE,
+    );
+    const firstRow = Math.floor((box.top - COARSE) / CELL_SIZE);
+    const lastRow = Math.floor(
+      (box.top + box.height + COARSE) / CELL_SIZE,
+    );
+
+    for (let column = firstColumn; column <= lastColumn; column++) {
+      for (let row = firstRow; row <= lastRow; row++) {
+        const key = `${column}:${row}`;
+        const bucket = buckets.get(key);
+        if (bucket) bucket.push(boxIndex);
+        else buckets.set(key, [boxIndex]);
+      }
+    }
+  });
+
+  return index;
+}
 
 function wrapTextNodes() {
   const wrapped: HTMLElement[] = [];
@@ -126,14 +166,29 @@ export default function CursorFX() {
 
     let spans: HTMLElement[] = [];
     let boxes: LitBox[] = [];
+    let spatialIndex: SpatialIndex = {
+      fixed: new Map(),
+      page: new Map(),
+    };
     let inRange = new Set<HTMLElement>();
+    const paintedPositions = new WeakMap<HTMLElement, string>();
     let disposed = false;
 
     const measure = () => {
       if (disposed) return;
+      const fixedParents = new WeakMap<HTMLElement, boolean>();
+      const parentIsFixed = (element: HTMLElement) => {
+        const parent = element.parentElement ?? element;
+        const cached = fixedParents.get(parent);
+        if (cached !== undefined) return cached;
+        const fixed = isFixed(parent);
+        fixedParents.set(parent, fixed);
+        return fixed;
+      };
+
       boxes = spans.map((element) => {
         const rect = element.getBoundingClientRect();
-        const fixed = isFixed(element);
+        const fixed = parentIsFixed(element);
         return {
           left: rect.left + (fixed ? 0 : window.scrollX),
           top: rect.top + (fixed ? 0 : window.scrollY),
@@ -142,6 +197,7 @@ export default function CursorFX() {
           fixed,
         };
       });
+      spatialIndex = buildSpatialIndex(boxes);
     };
 
     let measureTimer: ReturnType<typeof setTimeout> | undefined;
@@ -217,22 +273,35 @@ export default function CursorFX() {
         attributeFilter: ["class"],
       });
       window.addEventListener("resize", scheduleMeasure);
+      document.fonts?.ready.then(scheduleMeasure);
     }
 
     const paintLit = (x: number, y: number) => {
       const next = new Set<HTMLElement>();
+      const nextPositions: Array<{
+        element: HTMLElement;
+        dx: string;
+        dy: string;
+        key: string;
+      }> = [];
+      const pageX = x + window.scrollX;
+      const pageY = y + window.scrollY;
+      const candidates = [
+        ...(spatialIndex.page.get(cellKey(pageX, pageY)) ?? []),
+        ...(spatialIndex.fixed.get(cellKey(x, y)) ?? []),
+      ];
 
-      for (let index = 0; index < spans.length; index++) {
+      for (const index of candidates) {
         const box = boxes[index];
         if (!box) continue;
-        const pageX = box.fixed ? x : x + window.scrollX;
-        const pageY = box.fixed ? y : y + window.scrollY;
+        const pointerX = box.fixed ? x : pageX;
+        const pointerY = box.fixed ? y : pageY;
 
         if (
-          pageX < box.left - COARSE ||
-          pageX > box.left + box.width + COARSE ||
-          pageY < box.top - COARSE ||
-          pageY > box.top + box.height + COARSE
+          pointerX < box.left - COARSE ||
+          pointerX > box.left + box.width + COARSE ||
+          pointerY < box.top - COARSE ||
+          pointerY > box.top + box.height + COARSE
         ) {
           continue;
         }
@@ -250,15 +319,29 @@ export default function CursorFX() {
           continue;
         }
 
-        element.style.setProperty("--lx", `${dx.toFixed(0)}px`);
-        element.style.setProperty("--ly", `${dy.toFixed(0)}px`);
+        const roundedX = `${dx.toFixed(0)}px`;
+        const roundedY = `${dy.toFixed(0)}px`;
         next.add(element);
+        nextPositions.push({
+          element,
+          dx: roundedX,
+          dy: roundedY,
+          key: `${roundedX}:${roundedY}`,
+        });
+      }
+
+      for (const position of nextPositions) {
+        if (paintedPositions.get(position.element) === position.key) continue;
+        position.element.style.setProperty("--lx", position.dx);
+        position.element.style.setProperty("--ly", position.dy);
+        paintedPositions.set(position.element, position.key);
       }
 
       for (const element of inRange) {
         if (next.has(element)) continue;
         element.style.removeProperty("--lx");
         element.style.removeProperty("--ly");
+        paintedPositions.delete(element);
       }
       inRange = next;
     };
@@ -324,7 +407,6 @@ export default function CursorFX() {
     };
 
     const handleScroll = () => {
-      scheduleMeasure();
       requestFrame();
     };
 
@@ -346,7 +428,12 @@ export default function CursorFX() {
       window.removeEventListener("resize", scheduleMeasure);
       document.removeEventListener("pointerover", handleOver);
       unwrap(spans);
-      root.classList.remove("cursor-fx", "cursor-active", "cursor-native", "lit-ready");
+      root.classList.remove(
+        "cursor-fx",
+        "cursor-active",
+        "cursor-native",
+        "lit-ready",
+      );
     };
   }, [active]);
 

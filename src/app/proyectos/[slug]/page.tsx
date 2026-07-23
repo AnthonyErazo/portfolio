@@ -9,6 +9,7 @@ import {
   projectPath,
   type PortfolioProject,
 } from "@/lib/projects";
+import { getProjectImageSizes } from "@/lib/projectImageSizes";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
 
 interface ProjectPageProps {
@@ -323,7 +324,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       src={image.src}
                       alt={image.caption.es}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 960px"
+                      sizes={getProjectImageSizes(image.src, 960)}
                       className="object-contain"
                     />
                   </div>

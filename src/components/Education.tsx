@@ -26,6 +26,7 @@ export default function Education() {
                   src={item.logo}
                   alt={item.institution}
                   {...getLogoDimensions(item.logo, { width: 56, height: 56 })}
+                  sizes="96px"
                   style={{ width: "auto", height: "auto" }}
                   data-tone={item.logoTone}
                   className="brand-logo h-auto max-h-12 w-auto max-w-24 object-contain"

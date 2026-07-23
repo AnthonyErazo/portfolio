@@ -1,15 +1,39 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState } from "react";
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ArrowUpRight, ImageIcon, Search, X } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import { projects, projectTypeLabels, sectionTitles, type Project } from "@/data";
-import { projectPath } from "@/lib/projects";
+import {
+  projectTypeLabels,
+  sectionTitles,
+  type Project,
+  type ProjectSummary,
+} from "@/data";
+import { projectPath } from "@/lib/projectPaths";
 import SectionHeading from "./SectionHeading";
-import ProjectModal from "./ProjectModal";
 import ProjectTypeBadge from "./ProjectTypeBadge";
 import TechIcon from "./TechIcon";
+
+const loadProjectModal = () => import("./ProjectModal");
+const ProjectModal = dynamic(loadProjectModal, { ssr: false });
+let projectDetailsPromise: Promise<Map<number, Project>> | undefined;
+
+const loadProjectDetails = () => {
+  projectDetailsPromise ??= import("@/data/projects").then(
+    ({ projects }) =>
+      new Map(projects.map((project) => [project.id, project])),
+  );
+  return projectDetailsPromise;
+};
 
 type ProjectTypeFilter = "all" | Project["type"];
 
@@ -25,50 +49,95 @@ const featuredProjectRank = new Map(
   featuredProjectOrder.map((projectId, index) => [projectId, index])
 );
 
-const technologyOptions = Array.from(
-  new Set(projects.flatMap((project) => project.technologies))
-).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-
-const projectTypeCounts: Record<ProjectTypeFilter, number> = {
-  all: projects.length,
-  professional: projects.filter((project) => project.type === "professional").length,
-  university: projects.filter((project) => project.type === "university").length,
-  personal: projects.filter((project) => project.type === "personal").length,
-};
-
 const normalizeSearchText = (value: string) =>
   value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase();
 
-const projectSearchText = (project: Project) =>
+const projectSearchText = (project: ProjectSummary) =>
   normalizeSearchText(
     [
       project.title,
       project.shortDescription.es,
       project.shortDescription.en,
-      project.fullDescription.es,
-      project.fullDescription.en,
       projectTypeLabels[project.type].es,
       projectTypeLabels[project.type].en,
       ...project.technologies,
-      ...(project.features ?? []).flatMap((feature) => [feature.es, feature.en]),
       ...(project.highlights ?? []).flatMap((highlight) => [highlight.es, highlight.en]),
     ].join(" ")
   );
 
-const projectSearchIndex = new Map(
-  projects.map((project) => [project.id, projectSearchText(project)])
-);
-
-export default function Projects() {
+export default function Projects({ projects }: { projects: ProjectSummary[] }) {
   const { t } = useLanguage();
+  const sectionRef = useRef<HTMLElement>(null);
   const [selected, setSelected] = useState<Project | null>(null);
+  const [catalogReady, setCatalogReady] = useState(false);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<ProjectTypeFilter>("all");
   const [technologyFilter, setTechnologyFilter] = useState("all");
   const deferredQuery = useDeferredValue(query);
+  const technologyOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(projects.flatMap((project) => project.technologies)),
+      ).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    [projects],
+  );
+  const projectTypeCounts = useMemo<Record<ProjectTypeFilter, number>>(
+    () => ({
+      all: projects.length,
+      professional: projects.filter(
+        (project) => project.type === "professional",
+      ).length,
+      university: projects.filter(
+        (project) => project.type === "university",
+      ).length,
+      personal: projects.filter((project) => project.type === "personal")
+        .length,
+    }),
+    [projects],
+  );
+  const projectSearchIndex = useMemo(
+    () =>
+      new Map(
+        projects.map((project) => [project.id, projectSearchText(project)]),
+      ),
+    [projects],
+  );
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || catalogReady) return;
+
+    const prepareCatalog = () => {
+      void loadProjectModal();
+      void loadProjectDetails();
+      startTransition(() => setCatalogReady(true));
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      prepareCatalog();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        prepareCatalog();
+      },
+      { rootMargin: "1800px 0px" },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [catalogReady]);
+
+  const openProject = async (projectId: number) => {
+    const project = (await loadProjectDetails()).get(projectId);
+    if (project) setSelected(project);
+  };
 
   const queryTerms = useMemo(
     () => normalizeSearchText(deferredQuery.trim()).split(/\s+/).filter(Boolean),
@@ -85,7 +154,7 @@ export default function Projects() {
 
         return matchesType && matchesTechnology && matchesQuery;
       }),
-    [queryTerms, technologyFilter, typeFilter]
+    [projectSearchIndex, projects, queryTerms, technologyFilter, typeFilter]
   );
 
   const { featured, others } = useMemo(
@@ -123,7 +192,11 @@ export default function Projects() {
     : t({ es: `${projects.length} proyectos`, en: `${projects.length} projects` });
 
   return (
-    <section id="projects" className="section-container scroll-mt-20 py-16">
+    <section
+      ref={sectionRef}
+      id="projects"
+      className="section-container scroll-mt-20 py-16"
+    >
       <SectionHeading index="03" title={sectionTitles.projects} />
 
       <div className="reveal mb-12 rounded-lg border border-border bg-card/70 p-4 sm:p-5">
@@ -263,7 +336,7 @@ export default function Projects() {
                     <h3>
                       <button
                         type="button"
-                        onClick={() => setSelected(project)}
+                        onClick={() => void openProject(project.id)}
                         className="text-left font-serif text-2xl tracking-tight transition-colors hover:text-accent md:text-3xl"
                       >
                         {project.title}
@@ -297,14 +370,14 @@ export default function Projects() {
 
                   <div className="mt-5 flex flex-wrap items-center gap-6 font-mono text-sm">
                     <button
-                      onClick={() => setSelected(project)}
+                      onClick={() => void openProject(project.id)}
                       className="group/btn inline-flex items-center gap-1.5 text-accent transition-opacity hover:opacity-70"
                     >
                       {t({ es: "Ver detalle", en: "View details" })}
-                      {project.images && (
+                      {project.imageCount > 0 && (
                         <span className="inline-flex items-center gap-1 text-muted-foreground">
                           <ImageIcon className="h-3.5 w-3.5" />
-                          {shotsLabel(project.images.length)}
+                          {shotsLabel(project.imageCount)}
                         </span>
                       )}
                     </button>
@@ -356,7 +429,7 @@ export default function Projects() {
             </div>
           )}
 
-          {others.length > 0 && (
+          {others.length > 0 && (catalogReady || hasActiveFilters) && (
             <div className={featured.length > 0 ? "mt-16" : "mt-2"}>
               <h3 className="reveal mono-label mb-6">
                 {featured.length > 0
@@ -383,7 +456,7 @@ export default function Projects() {
                     >
                       <button
                         type="button"
-                        onClick={() => setSelected(project)}
+                        onClick={() => void openProject(project.id)}
                         aria-label={t({
                           es: `Abrir vista rápida de ${project.title}`,
                           en: `Open quick view for ${project.title}`,
@@ -416,10 +489,10 @@ export default function Projects() {
 
                         <div className="mt-4 flex items-center justify-between gap-3 font-mono text-xs text-muted-foreground">
                           <span>{compactTechnologies.join(" · ")}</span>
-                          {project.images && (
+                          {project.imageCount > 0 && (
                             <span className="inline-flex shrink-0 items-center gap-1 text-accent">
                               <ImageIcon className="h-3.5 w-3.5" />
-                              {project.images.length}
+                              {project.imageCount}
                             </span>
                           )}
                         </div>
@@ -433,7 +506,9 @@ export default function Projects() {
         </>
       )}
 
-      <ProjectModal project={selected} onClose={() => setSelected(null)} />
+      {selected && (
+        <ProjectModal project={selected} onClose={() => setSelected(null)} />
+      )}
     </section>
   );
 }

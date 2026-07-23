@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowUpRight, X } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { type Project } from "@/data";
+import { getProjectImageSizes } from "@/lib/projectImageSizes";
 import ProjectTypeBadge from "./ProjectTypeBadge";
 import TechIcon from "./TechIcon";
 
@@ -154,7 +155,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                         src={image.src}
                         alt={t(image.caption)}
                         fill
-                        sizes="(max-width: 768px) 100vw, 700px"
+                        sizes={getProjectImageSizes(image.src, 700)}
                         className="object-contain"
                       />
                     </div>
