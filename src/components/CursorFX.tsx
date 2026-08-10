@@ -7,7 +7,7 @@ const EASE = 0.18;
 const RADIUS = 110;
 const COARSE = 260;
 const CELL_SIZE = 256;
-const ENABLE_QUERY = "(any-pointer: fine)";
+const ENABLE_QUERY = "(hover: hover) and (pointer: fine)";
 const SKIP_TAGS = new Set([
   "SCRIPT",
   "STYLE",
