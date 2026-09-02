@@ -45,7 +45,7 @@ const projectTypeFilters: ProjectTypeFilter[] = [
   "personal",
 ];
 
-const featuredProjectOrder = [31, 30, 1, 12, 13, 10, 25, 27, 26];
+const featuredProjectOrder = [31, 1, 30, 12, 13, 10, 25, 27, 26];
 const featuredProjectRank = new Map(
   featuredProjectOrder.map((projectId, index) => [projectId, index])
 );

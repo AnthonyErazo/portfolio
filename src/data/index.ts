@@ -116,35 +116,35 @@ export const personalInfo = {
   name: "Anthony Josue Erazo Llacsahuanga",
   shortName: "Anthony Erazo",
   title: {
-    es: "Agentes de IA · Desarrollador Full Stack · Lima, Perú",
-    en: "AI Agents · Full Stack Developer · Lima, Peru",
+    es: "Desarrollador Full Stack · Agentes de IA · Lima, Perú",
+    en: "Full Stack Developer · AI Agents · Lima, Peru",
   },
   subtitle: {
-    es: "Construyo agentes de IA con Python, LangGraph y RAG, y los sostengo con evaluación medible, gobierno, trazabilidad y despliegue en Google Cloud y AWS.",
-    en: "I build AI agents with Python, LangGraph, and RAG, backed by measurable evaluation, governance, traceability, and deployment on Google Cloud and AWS.",
+    es: "Construyo backend, aplicaciones web y móviles sobre Google Cloud y AWS. Ahora enfoco ese trabajo en agentes de IA con Python, LangGraph y RAG, con evaluación y trazabilidad medibles.",
+    en: "I build backend, web, and mobile applications on Google Cloud and AWS. I'm now focusing that work on AI agents with Python, LangGraph, and RAG, with measurable evaluation and traceability.",
   },
   about: {
-    es: "Soy Anthony Josue Erazo Llacsahuanga, estudiante de Ingeniería de Sistemas en la UNI y desarrollador en Lima, Perú. Trabajo en agentes de IA aplicados a procesos de negocio: orquestación con LangGraph, recuperación RAG, ingeniería de prompts y APIs en Python con FastAPI. Me interesa sobre todo la parte que suele quedar sin resolver: cómo se evalúa un agente con casos golden y métricas reproducibles, cómo se audita lo que respondió, cómo decide cuándo derivar a una persona y cuánto cuesta cada respuesta. Todo eso se apoya en lo que vengo construyendo desde antes: backend, web y móvil sobre Google Cloud y AWS, con CI/CD en GitHub Actions, Docker y analítica en BigQuery, en productos usados por millones de usuarios y por clientes empresariales.",
-    en: "I'm Anthony Josue Erazo Llacsahuanga, a Systems Engineering student at UNI and a developer based in Lima, Peru. I work on AI agents applied to business processes: orchestration with LangGraph, RAG retrieval, prompt engineering, and Python APIs with FastAPI. What interests me most is the part that usually goes unsolved: how an agent is evaluated with golden cases and reproducible metrics, how its answers are audited, how it decides when to hand off to a person, and how much each answer costs. All of that rests on what I had been building before: backend, web, and mobile software on Google Cloud and AWS, with CI/CD in GitHub Actions, Docker, and BigQuery analytics, on products used by millions of users and by business clients.",
+    es: "Soy Anthony Josue Erazo Llacsahuanga, estudiante de Ingeniería de Sistemas en la UNI y desarrollador en Lima, Perú. Vengo del desarrollo de software: backend, web y móvil sobre Google Cloud y AWS, con TypeScript, Python, Java y Flutter, CI/CD en GitHub Actions, Docker y analítica en BigQuery, en productos usados por millones de usuarios y por clientes empresariales. Sobre esa base estoy enfocando mi trabajo en IA aplicada: agentes orquestados con LangGraph, recuperación RAG, ingeniería de prompts y APIs en Python con FastAPI. Me interesa la parte que suele quedar sin resolver: cómo se evalúa un agente con casos golden y métricas reproducibles, cómo se audita lo que respondió, cómo decide cuándo derivar a una persona y cuánto cuesta cada respuesta.",
+    en: "I'm Anthony Josue Erazo Llacsahuanga, a Systems Engineering student at UNI and a developer based in Lima, Peru. I come from software development: backend, web, and mobile on Google Cloud and AWS, with TypeScript, Python, Java, and Flutter, CI/CD in GitHub Actions, Docker, and BigQuery analytics, on products used by millions of users and by business clients. On that base I'm focusing my work on applied AI: agents orchestrated with LangGraph, RAG retrieval, prompt engineering, and Python APIs with FastAPI. What interests me is the part that usually goes unsolved: how an agent is evaluated with golden cases and reproducible metrics, how its answers are audited, how it decides when to hand off to a person, and how much each answer costs.",
   },
   facts: [
     { es: "Ingeniería de Sistemas · Universidad Nacional de Ingeniería · 9.º ciclo", en: "Systems Engineering · National University of Engineering · 9th semester" },
     { es: "Programa de doble titulación en IA · Hanyang Cyber University / UNI FIIS", en: "Double degree program in AI · Hanyang Cyber University / UNI FIIS" },
-    { es: "Agentes de IA con LangGraph, RAG y Gemini, evaluados con casos golden y métricas reproducibles", en: "AI agents with LangGraph, RAG, and Gemini, evaluated with golden cases and reproducible metrics" },
-    { es: "APIs en Python con FastAPI · Google Cloud y AWS certificados por Google y AWS Academy", en: "Python APIs with FastAPI · Google Cloud and AWS certified by Google and AWS Academy" },
+    { es: "Backend, web y móvil en producción · Google Cloud y AWS certificados por Google y AWS Academy", en: "Backend, web, and mobile in production · Google Cloud and AWS certified by Google and AWS Academy" },
+    { es: "Enfoque actual en IA aplicada · agentes con LangGraph y RAG, evaluados con casos golden", en: "Current focus on applied AI · agents with LangGraph and RAG, evaluated with golden cases" },
     { es: "Experiencia en productos para usuarios finales, clientes B2B y entidades externas", en: "Experience with end-user products, B2B clients, and external organizations" },
     { es: "Inglés intermedio", en: "Intermediate English" },
   ],
   availability: {
-    es: "Agentes de IA · Python · Cloud · Evaluación y observabilidad",
-    en: "AI agents · Python · Cloud · Evaluation and observability",
+    es: "Full Stack · Backend · Cloud · Agentes de IA",
+    en: "Full Stack · Backend · Cloud · AI agents",
   },
   ticker: [
-    { es: "recibo-claro · 0% de alucinaciones en 261 casos golden", en: "recibo-claro · 0% hallucinations across 261 golden cases" },
-    { es: "LangGraph · orquestación con checkpointer persistente", en: "LangGraph · orchestration with a persistent checkpointer" },
-    { es: "Hand-off · 100% de recall al derivar a un humano", en: "Hand-off · 100% recall when escalating to a human" },
     { es: "TuRuta · 5M+ usuarios registrados", en: "TuRuta · 5M+ registered users" },
+    { es: "recibo-claro · 0% de alucinaciones en 261 casos golden", en: "recibo-claro · 0% hallucinations across 261 golden cases" },
     { es: "Telemetría · 60%–80% menos tamaño", en: "Telemetry · 60%–80% smaller payloads" },
+    { es: "Datero · 8–10 clientes empresariales", en: "Datero · 8–10 business clients" },
+    { es: "LangGraph · orquestación con checkpointer persistente", en: "LangGraph · orchestration with a persistent checkpointer" },
   ],
   email: "anthonyerazo76@gmail.com",
   phone: "+51 943 732 232",
@@ -178,7 +178,6 @@ export const experiences: Experience[] = [
     technologies: ["Flutter", "TypeScript", "Next.js", "Node.js", "OpenAI Realtime API", "Twilio", "WebSockets", "Firestore", "Google Cloud", "Cloud Run", "AWS", "Typesense", "BigQuery", "Firebase Analytics", "Protocol Buffers", "Docker", "GitHub Actions", "CI/CD"],
     achievements: [
       { es: "Construí Phone Assistant, una base reutilizable de agentes telefónicos con IA en tiempo real que ejecutan acciones de negocio durante la llamada; sirvió como punto de partida para Guía de Fe y otros proyectos", en: "Built Phone Assistant, a reusable foundation of real-time AI phone agents that execute business actions during the call; it became the starting point for Guía de Fe and other projects" },
-      { es: "Integré los agentes con los sistemas de la empresa: Twilio para la voz, Firestore para la persistencia, Google Maps para validar direcciones y un panel para observar llamadas, transcripciones y funciones ejecutadas", en: "Integrated the agents with company systems: Twilio for voice, Firestore for persistence, Google Maps for address validation, and a dashboard to observe calls, transcripts, and executed functions" },
       { es: "Reduje el tamaño de la telemetría entre 60% y 80% al migrarla de JSON a Protocol Buffers y Base64", en: "Reduced telemetry size by 60% to 80% by migrating it from JSON to Protocol Buffers and Base64" },
       { es: "Optimicé el buscador de rutas con Typesense y servicios en AWS y Google Cloud, mejorando la latencia y reduciendo costos", en: "Optimized route search with Typesense and services on AWS and Google Cloud, improving latency and reducing costs" },
       { es: "Desarrollé funcionalidades para Datero en el panel web, la app para unidades y el backend; el producto era utilizado por aproximadamente 8 a 10 clientes empresariales", en: "Built Datero features across the web dashboard, unit app, and backend; the product was used by approximately 8 to 10 business clients" },
@@ -330,13 +329,6 @@ export const skillGroups: SkillGroup[] = [
     ],
   },
   {
-    label: { es: "En aprendizaje", en: "Currently learning" },
-    items: [
-      "Google ADK",
-      { es: "Observabilidad de LLMs en producción", en: "LLM observability in production" },
-    ],
-  },
-  {
     label: { es: "Lenguajes", en: "Languages" },
     items: ["Python", "TypeScript", "JavaScript", "Java", "C#", "SQL"],
   },
@@ -355,6 +347,13 @@ export const skillGroups: SkillGroup[] = [
   {
     label: { es: "Frontend y móvil", en: "Frontend & Mobile" },
     items: ["Angular", "React", "Next.js", "Flutter"],
+  },
+  {
+    label: { es: "En aprendizaje", en: "Currently learning" },
+    items: [
+      "Google ADK",
+      { es: "Observabilidad de LLMs en producción", en: "LLM observability in production" },
+    ],
   },
   {
     label: { es: "Otros", en: "Other" },
