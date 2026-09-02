@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   GraduationCap,
   Lightbulb,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { projectTypeLabels, type Project } from "@/data";
@@ -13,11 +14,13 @@ import { cn } from "@/lib/utils";
 const icons: Record<Project["type"], LucideIcon> = {
   professional: BriefcaseBusiness,
   university: GraduationCap,
+  hackathon: Trophy,
   personal: Lightbulb,
 };
 
 const styles: Record<Project["type"], string> = {
   professional: "border-accent/40 bg-accent/10 text-accent",
+  hackathon: "border-accent/40 bg-accent/10 text-accent",
   university: "border-foreground/20 bg-foreground/5 text-foreground",
   personal: "border-border bg-muted text-muted-foreground",
 };

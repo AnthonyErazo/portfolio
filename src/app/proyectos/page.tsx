@@ -62,6 +62,11 @@ const groups: Array<{
       "Productos y soluciones desarrollados dentro de una experiencia laboral real.",
   },
   {
+    type: "hackathon",
+    description:
+      "Soluciones construidas en competencias técnicas, contra un enunciado real y con criterios de evaluación explícitos.",
+  },
+  {
     type: "university",
     description:
       "Proyectos académicos con problemas, decisiones técnicas y resultados documentados.",

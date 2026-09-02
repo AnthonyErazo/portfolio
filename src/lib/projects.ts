@@ -19,6 +19,7 @@ export function isProjectIndexable(project: Project): boolean {
   return (
     project.type === "professional" ||
     project.type === "university" ||
+    project.type === "hackathon" ||
     INDEXABLE_PERSONAL_PROJECT_IDS.has(project.id)
   );
 }

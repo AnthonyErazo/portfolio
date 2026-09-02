@@ -2,6 +2,62 @@ import type { Project } from "./index";
 
 export const projects: Project[] = [
   {
+    id: 31,
+    title: "recibo-claro",
+    shortDescription: {
+      es: "Agente de IA que explica por qué varió un recibo de telefonía, con cada cifra anclada en código y derivación a un asesor humano cuando no puede sostener la respuesta.",
+      en: "AI agent that explains why a telecom bill changed, with every figure anchored in code and hand-off to a human advisor when it cannot support the answer.",
+    },
+    fullDescription: {
+      es: "El Hackathon AI Telecom Challenge 2026 —Integratel Perú (Movistar) con la Facultad de Ingeniería de la Universidad de Lima— pedía explicar el recibo a los clientes que no entienden por qué les llegó más caro, con un requisito poco común: cero invenciones financieras comprobables en los logs de la terminal. Construí una API canal-agnóstica en Python donde el modelo generativo no calcula: recibe un conjunto de hechos ya conciliado y sellado con SHA-256, aporta solo la prosa, y cada cifra del texto la inyecta el código desde ese conjunto. Un verificador escrito en código —no un juez LLM— revisa la respuesta final y la bloquea si aparece un número sin anclar. Sobre esa base monté la orquestación con LangGraph, un protocolo de evaluación con 261 casos golden, y las capas de gobierno, observabilidad y coste que faltan cuando un agente pasa de demostración a proceso de negocio. Las métricas se miden contra un ground truth escrito por el mismo autor y el repositorio lo advierte: la única garantía estructural es la tasa de alucinación, porque el verificador compara contra los hechos del propio cliente y no contra el ground truth.",
+      en: "The AI Telecom Challenge 2026 hackathon — Integratel Perú (Movistar) with the Engineering Faculty of Universidad de Lima — asked for an assistant that explains bills to customers who do not understand why theirs went up, with an unusual requirement: zero invented financial figures, provable from terminal logs. I built a channel-agnostic Python API where the generative model does not compute: it receives an already reconciled fact set sealed with SHA-256, contributes only the prose, and every figure in the text is injected by code from that set. A verifier written in code — not an LLM judge — reviews the final answer and blocks it if an unanchored number appears. On that base I added LangGraph orchestration, an evaluation protocol with 261 golden cases, and the governance, observability, and cost layers that are missing when an agent moves from demo to business process. Metrics are measured against a ground truth written by the same author and the repository says so: the only structural guarantee is the hallucination rate, because the verifier compares against the customer own facts, not against the ground truth.",
+    },
+    technologies: ["Python", "LangGraph", "LangChain", "FastAPI", "Pydantic", "Gemini", "RAG", "pgvector", "BM25", "PostgreSQL", "Supabase", "Jinja", "JWT", "Docker", "React", "TypeScript"],
+    category: "web",
+    type: "hackathon",
+    featured: true,
+    repoUrl: "https://github.com/AnthonyErazo/ai-telecom",
+    highlights: [
+      { es: "Problema · Explicar recibos a escala sin que el modelo invente una sola cifra", en: "Problem · Explain bills at scale without the model inventing a single figure" },
+      { es: "Decisión · El código calcula y verifica; el modelo solo redacta", en: "Decision · Code computes and verifies; the model only writes" },
+      { es: "Resultado · 0% de alucinaciones y 100% de recall de derivación en 261 casos golden", en: "Outcome · 0% hallucinations and 100% hand-off recall across 261 golden cases" },
+    ],
+    features: [
+      {
+        es: "Orquesté el turno con LangGraph: un grafo que vuelve explícitas las once salidas posibles del flujo, con un checkpointer persistente para que el historial de la conversación y la histéresis de derivación sobrevivan al reinicio del proceso.",
+        en: "Orchestrated the turn with LangGraph: a graph that makes the flow eleven possible exits explicit, with a persistent checkpointer so conversation history and hand-off hysteresis survive a process restart.",
+      },
+      {
+        es: "Implementé el verificador numérico que sostiene la promesa de cero alucinaciones: extrae cada cifra del texto generado, la normaliza a tokens y la resta contra el conjunto permitido construido solo desde los hechos del cliente. Una sola cifra sin anclar bloquea la respuesta y abre la derivación.",
+        en: "Implemented the numeric verifier behind the zero-hallucination promise: it extracts every figure from the generated text, normalizes it into tokens, and subtracts it against the allowed set built solely from the customer facts. A single unanchored figure blocks the answer and opens the hand-off.",
+      },
+      {
+        es: "Diseñé el protocolo de evaluación: 261 casos golden —38 escritos a mano y el resto por muestreo estratificado reproducible por semilla, con 16 adversariales de inyección de prompt— y métricas de recuperación, alucinación y hand-off que devuelven código de salida para integrarse a un pipeline de CI.",
+        en: "Designed the evaluation protocol: 261 golden cases — 38 hand-written and the rest by seed-reproducible stratified sampling, including 16 prompt-injection adversarials — plus retrieval, hallucination, and hand-off metrics that return an exit code so they can run inside a CI pipeline.",
+      },
+      {
+        es: "Construí la capa generativa sobre Gemini con un prompt de cuatro bloques fijos, diez plantillas por causa dominante y el mensaje del cliente siempre delimitado y neutralizado al final, además de una cascada de proveedores que degrada a plantilla determinística en lugar de caerse.",
+        en: "Built the generative layer on Gemini with a prompt of four fixed blocks, ten templates by dominant cause, and the customer message always delimited and neutralized at the end, plus a provider cascade that degrades to a deterministic template instead of failing.",
+      },
+      {
+        es: "Levanté el gobierno del agente: bitácora de auditoría encadenada por hash con UPDATE y DELETE bloqueados por trigger, una matriz de niveles de autenticación por canal donde WhatsApp no recibe un solo importe, y apagado forzado de la telemetría de terceros para que el contenido del turno no salga del proceso.",
+        en: "Built the agent governance layer: a hash-chained audit log with UPDATE and DELETE blocked by trigger, an authentication-level matrix per channel where WhatsApp receives no amounts at all, and forced shutdown of third-party telemetry so turn content never leaves the process.",
+      },
+      {
+        es: "Monté el RAG híbrido —catálogo por clave, preguntas frecuentes con BM25 y pgvector fusionados por RRF, casuísticas por firma causal— con un saneador que sustituye toda cifra del corpus antes de que llegue al prompt, para que el recuperador nunca pueda aportar un número ajeno al cliente.",
+        en: "Assembled the hybrid RAG — catalog by key, FAQs with BM25 and pgvector fused by RRF, case patterns by causal signature — with a sanitizer that replaces every figure in the corpus before it reaches the prompt, so retrieval can never contribute a number foreign to the customer.",
+      },
+      {
+        es: "Calculé el coste del sistema por modelo y por camino, con precios verificados, coste unitario por respuesta y volumetría declarada, para poder elegir el modelo por un criterio explícito —humanización, velocidad, coste o control del dato— y no por intuición.",
+        en: "Costed the system per model and per path, with verified prices, unit cost per answer, and declared volumes, so the model can be chosen by an explicit criterion — tone, speed, cost, or data control — instead of intuition.",
+      },
+      {
+        es: "Empaqueté la entrega para que se levante en un comando: imagen Docker multi-stage, migraciones SQL idempotentes, dataset sintético determinístico por semilla y una ruta alternativa sin Docker ni base de datos. La suite de pruebas cubre unidad, propiedad, contrato y casos golden.",
+        en: "Packaged the delivery so it starts with one command: a multi-stage Docker image, idempotent SQL migrations, a seed-deterministic synthetic dataset, and an alternative path with neither Docker nor a database. The test suite covers unit, property, contract, and golden cases.",
+      },
+    ],
+  },
+  {
     id: 1,
     title: "TuRuta App",
     shortDescription: {

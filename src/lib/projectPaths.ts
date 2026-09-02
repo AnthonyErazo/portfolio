@@ -27,6 +27,7 @@ const PROJECT_SLUGS: Record<number, string> = {
   28: "sabores-deliciosos",
   29: "voice-dictation",
   30: "phone-assistant",
+  31: "recibo-claro",
 };
 
 export function projectPathFromSlug(slug: string): `/proyectos/${string}` {

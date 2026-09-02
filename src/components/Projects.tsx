@@ -40,11 +40,12 @@ type ProjectTypeFilter = "all" | Project["type"];
 const projectTypeFilters: ProjectTypeFilter[] = [
   "all",
   "professional",
+  "hackathon",
   "university",
   "personal",
 ];
 
-const featuredProjectOrder = [1, 30, 12, 13, 10, 25, 27, 26];
+const featuredProjectOrder = [31, 30, 1, 12, 13, 10, 25, 27, 26];
 const featuredProjectRank = new Map(
   featuredProjectOrder.map((projectId, index) => [projectId, index])
 );
@@ -89,6 +90,9 @@ export default function Projects({ projects }: { projects: ProjectSummary[] }) {
       all: projects.length,
       professional: projects.filter(
         (project) => project.type === "professional",
+      ).length,
+      hackathon: projects.filter(
+        (project) => project.type === "hackathon",
       ).length,
       university: projects.filter(
         (project) => project.type === "university",

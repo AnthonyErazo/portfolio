@@ -72,9 +72,24 @@ const ICONS: Record<string, TechIconMeta> = {
     hex: "E76F00",
     viewBox: "0 0 128 128",
   },
+  jinja: {
+    symbolId: "tech-icon-jinja",
+    hex: "7E0C1B",
+    viewBox: SIMPLE_VIEWBOX,
+  },
   jwt: {
     symbolId: "tech-icon-jwt",
     hex: "000000",
+    viewBox: SIMPLE_VIEWBOX,
+  },
+  langchain: {
+    symbolId: "tech-icon-langchain",
+    hex: "1C3C3C",
+    viewBox: SIMPLE_VIEWBOX,
+  },
+  langgraph: {
+    symbolId: "tech-icon-langgraph",
+    hex: "1C3C3C",
     viewBox: SIMPLE_VIEWBOX,
   },
   kafka: {
@@ -117,6 +132,11 @@ const ICONS: Record<string, TechIconMeta> = {
     hex: "4169E1",
     viewBox: SIMPLE_VIEWBOX,
   },
+  pydantic: {
+    symbolId: "tech-icon-pydantic",
+    hex: "E92063",
+    viewBox: SIMPLE_VIEWBOX,
+  },
   python: {
     symbolId: "tech-icon-python",
     hex: "3776AB",
@@ -150,6 +170,11 @@ const ICONS: Record<string, TechIconMeta> = {
   "spring webflux": {
     symbolId: "tech-icon-springboot",
     hex: "6DB33F",
+    viewBox: SIMPLE_VIEWBOX,
+  },
+  supabase: {
+    symbolId: "tech-icon-supabase",
+    hex: "3FCF8E",
     viewBox: SIMPLE_VIEWBOX,
   },
   typescript: {

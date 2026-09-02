@@ -6,7 +6,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const projectEntries: MetadataRoute.Sitemap = indexableProjects.map((project) => ({
     url: absoluteUrl(projectPath(project)),
     changeFrequency: "monthly",
-    priority: project.type === "professional" ? 0.8 : 0.7,
+    priority:
+      project.type === "professional" || project.type === "hackathon"
+        ? 0.8
+        : 0.7,
     images: project.images?.map((image) => absoluteUrl(image.src)),
   }));
 
