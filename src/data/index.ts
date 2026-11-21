@@ -341,6 +341,10 @@ export const skillGroups: SkillGroup[] = [
     items: ["PostgreSQL", "Supabase", "MySQL", "MongoDB", "Firestore", "BigQuery", "Firebase Analytics", "Typesense"],
   },
   {
+    label: { es: "Datos y pipelines", en: "Data & Pipelines" },
+    items: ["Apache Airflow", "PySpark", "Dataproc", "Pandas", "BigQuery ML", "scikit-learn", "Looker Studio", "Metabase", "Grafana", "Loki"],
+  },
+  {
     label: { es: "Cloud y DevOps", en: "Cloud & DevOps" },
     items: ["Google Cloud", "Cloud Functions", "Cloud Run", "Cloud Storage", "AWS Lambda", "Amazon S3", "CloudWatch", "Docker", "Docker Compose", "GitHub Actions", "CI/CD"],
   },

@@ -800,6 +800,97 @@ export const projects: Project[] = [
     ],
   },
   {
+    id: 32,
+    title: "Sistema de Integración de Multas",
+    shortDescription: {
+      es: "Pipeline ETL orquestado con Airflow que reúne las multas de 10 áreas y archivos Excel en una base central consultable al instante, con monitoreo y reportes.",
+      en: "Airflow-orchestrated ETL pipeline that brings fines from 10 departments and Excel files into one central database queryable instantly, with monitoring and reports.",
+    },
+    fullDescription: {
+      es: "El reto era que el personal de atención pudiera consultar, por DNI o RUC, todas las multas de un cliente en el momento, en lugar de entregarle un ticket y pedirle que vuelva en unos días. Los datos estaban repartidos entre los sistemas de 10 áreas y archivos Excel, y por ser datos personales no podían salir de la organización. Construí una arquitectura basada en servicios que corre on-premise en contenedores Docker: de noche, Airflow lanza un ETL en Python que trae solo lo que cambió y lo carga en PostgreSQL; de día, una API en FastAPI con caché en Redis responde las consultas y registra cada cambio con su auditoría. Los resultados de carga y rendimiento corresponden a datos de prueba generados para el proyecto.",
+      en: "The challenge was to let front-desk staff look up every fine a customer has, by national ID or tax ID, on the spot, instead of handing them a ticket and asking them to come back in a few days. The data was spread across the systems of 10 departments plus Excel files, and as personal data it could not leave the organization. I built a service-based architecture that runs on-premise in Docker containers: at night, Airflow launches a Python ETL that brings in only what changed and loads it into PostgreSQL; during the day, a FastAPI API with Redis caching answers queries and records every change with its audit trail. Load and performance results apply to test data generated for the project.",
+    },
+    technologies: ["Python", "Apache Airflow", "Pandas", "FastAPI", "Pydantic", "PostgreSQL", "Redis", "Next.js", "TypeScript", "Metabase", "Grafana", "Loki", "Docker", "pytest"],
+    category: "web",
+    type: "personal",
+    featured: true,
+    repoUrl: "https://github.com/AnthonyErazo/sistema-multas",
+    highlights: [
+      { es: "Problema · Consultar al instante datos repartidos entre 10 sistemas y archivos Excel", en: "Problem · Instantly query data spread across 10 systems and Excel files" },
+      { es: "Decisión · ETL nocturno con Airflow y marca de agua, separado de la consulta diaria", en: "Decision · Nightly Airflow ETL with watermarks, decoupled from daytime queries" },
+      { es: "Resultado · 1,17 millones de multas cargadas y 0 errores en 3000 consultas concurrentes", en: "Outcome · 1.17 million fines loaded and 0 errors across 3,000 concurrent queries" },
+    ],
+    features: [
+      {
+        es: "Construí el pipeline ETL en Python y Pandas: extrae, mapea columnas aunque tengan otro nombre, limpia, valida, cruza y carga con COPY e INSERT ON CONFLICT por lote, así que repetir una carga no duplica nada.",
+        en: "Built the ETL pipeline in Python and Pandas: it extracts, maps columns even when they are named differently, cleans, validates, reconciles, and loads with COPY and batched INSERT ON CONFLICT, so re-running a load never duplicates data.",
+      },
+      {
+        es: "Orquesté la carga nocturna con Apache Airflow: cada sistema se lee con un usuario de solo lectura y desde la última marca de agua, con dos reintentos automáticos y el log de cada ejecución.",
+        en: "Orchestrated the nightly load with Apache Airflow: each source system is read with a read-only user from the last watermark, with two automatic retries and a log for every run.",
+      },
+      {
+        es: "Cargué 600 000 multas de los sistemas en 62 segundos y 707 000 filas de Excel en 67 segundos; las 15 433 filas inválidas quedaron registradas con su motivo y las 66 958 diferencias entre fuentes, guardadas para revisión. Una segunda ejecución sin cambios tardó menos de 1 segundo.",
+        en: "Loaded 600,000 fines from the source systems in 62 seconds and 707,000 Excel rows in 67 seconds; the 15,433 invalid rows were logged with their reason and the 66,958 discrepancies between sources were stored for review. A second run with no changes took under 1 second.",
+      },
+      {
+        es: "Desarrollé la API en FastAPI con arquitectura hexagonal y caché en Redis. En la prueba de carga respondió 3000 consultas de 30 usuarios a la vez sobre 1,17 millones de multas, con 0 errores y 123 ms de promedio con caché.",
+        en: "Developed the FastAPI API with hexagonal architecture and Redis caching. In the load test it served 3,000 queries from 30 concurrent users over 1.17 million fines, with 0 errors and a 123 ms average with cache.",
+      },
+      {
+        es: "Centralicé los logs del backend, PostgreSQL, Airflow y Metabase con Grafana Alloy y Loki, con tableros y alertas en Grafana, y publiqué reportes para jefatura en Metabase con un usuario de solo lectura.",
+        en: "Centralized logs from the backend, PostgreSQL, Airflow, and Metabase with Grafana Alloy and Loki, with dashboards and alerts in Grafana, and published management reports in Metabase through a read-only user.",
+      },
+      {
+        es: "Cubrí el ETL y el backend con 58 pruebas automatizadas en pytest, incluida una que guarda la misma multa 8 veces a la vez y comprueba que queda una sola.",
+        en: "Covered the ETL and backend with 58 automated pytest tests, including one that saves the same fine 8 times concurrently and checks that only one remains.",
+      },
+    ],
+  },
+  {
+    id: 33,
+    title: "Sistema BI en la Nube — Industria Textil",
+    shortDescription: {
+      es: "Arquitectura de inteligencia de negocios en Google Cloud con PySpark en Dataproc, modelo dimensional en BigQuery y prototipos predictivos en BigQuery ML.",
+      en: "Business intelligence architecture on Google Cloud with PySpark on Dataproc, a dimensional model in BigQuery, and predictive prototypes in BigQuery ML.",
+    },
+    fullDescription: {
+      es: "El reto grupal del curso Sistemas de Inteligencia de Negocios fue resolver la fragmentación de los datos de producción, calidad, despachos, ventas, inventarios y costos de una empresa textil exportadora, que impedía seguir cada pedido y evaluar sus indicadores a tiempo. Implementamos en Google Cloud una arquitectura desacoplada: una zona de aterrizaje en Cloud Storage, transformaciones por lotes con PySpark en Dataproc, un modelo dimensional en BigQuery, un dashboard ejecutivo en Looker Studio y prototipos predictivos en BigQuery ML. Trabajamos con datos sintéticos coherentes con el proceso textil, y los modelos se presentan como prototipos analíticos, no como modelos productivos validados.",
+      en: "The group challenge in the Business Intelligence Systems course was to solve the fragmentation of production, quality, dispatch, sales, inventory, and cost data at a textile export company, which made it hard to track each order and evaluate its indicators on time. We implemented a decoupled architecture on Google Cloud: a landing zone in Cloud Storage, batch transformations with PySpark on Dataproc, a dimensional model in BigQuery, an executive dashboard in Looker Studio, and predictive prototypes in BigQuery ML. We worked with synthetic data consistent with the textile process, and the models are presented as analytical prototypes, not validated production models.",
+    },
+    technologies: ["PySpark", "Dataproc", "Cloud Storage", "BigQuery", "BigQuery ML", "Looker Studio", "SQL", "Google Cloud"],
+    category: "other",
+    type: "university",
+    featured: true,
+    highlights: [
+      { es: "Problema · Datos de producción, calidad, despachos y costos dispersos entre áreas", en: "Problem · Production, quality, dispatch, and cost data scattered across departments" },
+      { es: "Decisión · Separar almacenamiento, procesamiento con PySpark, consulta y visualización", en: "Decision · Separate storage, PySpark processing, querying, and visualization" },
+      { es: "Resultado · KPIs de OTIF, cumplimiento del plan, margen bruto, defectos y reproceso en un solo tablero", en: "Outcome · OTIF, plan fulfillment, gross margin, defect, and rework KPIs in a single dashboard" },
+    ],
+    features: [
+      {
+        es: "Organizamos un bucket de Cloud Storage con zonas separadas para datos crudos, datos analíticos y scripts, de modo que los archivos originales se conservan sin alteración.",
+        en: "Organized a Cloud Storage bucket with separate zones for raw data, analytical data, and scripts, so the original files are kept unaltered.",
+      },
+      {
+        es: "Implementamos las transformaciones por lotes con PySpark en Dataproc para limpiar, integrar y agregar los datos antes de cargarlos a BigQuery, con una lógica ETL reproducible.",
+        en: "Implemented batch transformations with PySpark on Dataproc to clean, integrate, and aggregate data before loading it into BigQuery, with reproducible ETL logic.",
+      },
+      {
+        es: "Diseñamos un modelo dimensional en BigQuery definiendo primero el grano de cada hecho, para que el dashboard consuma tablas validadas y no archivos crudos.",
+        en: "Designed a dimensional model in BigQuery by defining the grain of each fact first, so the dashboard consumes validated tables instead of raw files.",
+      },
+      {
+        es: "Construimos prototipos predictivos en BigQuery ML: ARIMA_PLUS para pronóstico de series de tiempo y regresión logística para clasificación binaria.",
+        en: "Built predictive prototypes in BigQuery ML: ARIMA_PLUS for time-series forecasting and logistic regression for binary classification.",
+      },
+      {
+        es: "Publicamos un dashboard ejecutivo en Looker Studio cuya lectura integrada mostró que, aunque el margen y el cumplimiento productivo eran favorables, el OTIF era el principal riesgo logístico.",
+        en: "Published an executive Looker Studio dashboard whose combined reading showed that, although margin and production fulfillment were favorable, OTIF was the main logistics risk.",
+      },
+    ],
+  },
+  {
     id: 26,
     title: "Sistema Contable",
     shortDescription: {
